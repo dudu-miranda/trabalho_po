@@ -56,6 +56,7 @@ class Matriz(object):
 		return temp
 
 
+	#Função 
 	def produtoEscalar(self,vetor):
 
 		return self.multiplicaMatriz(vetor)[0][0]
@@ -70,8 +71,34 @@ class Matriz(object):
 3 6 9
 """
 
+def menuzinho():
+
+	s = Simplex()
+
+	op=1
+	while op!=0:
+		print('Digite 0 para sair do programa')
+		print('Digite 1 para carregar o arquivo do modelo.\n')
+		print('Digite 2 para modificar o modelo.\n')
+		op = int(input())
+		if(op==1):
+			matriz = carregarArquivo()
+			s.calcula()
+			s.mostra()
+		elif:
+			matriz = modificaModelo()
+			s.calcula()
+			s.mostra()
+
+
+
+
+menuzinho()
+
 m1 = [ [1], [1], [2], [3] ]
+
 ident = [ [1,2,3,4] ]
+
 ident1 = Matriz(ident)
 
 mat1 = Matriz(m1)
