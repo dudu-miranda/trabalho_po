@@ -88,17 +88,19 @@ class Matriz(object):
 
 		for j in range(0,n-2):
 			
+			print('passei')
 			#Escolha do pivô
-			p, maior = j+1, abs(A[0][j])
+			p, maior = j, abs(A[0][j])
 			for k in range(j+1,n):
 				if(abs(A[k][j]) > maior):
 					maior = abs(A[k][j])
 					p = k
 
 			if(p != j):
-				for k in range(0, n):
+				A[j], A[p] = A[p], A[j]
+				#for k in range(0, n):
 					#Troca das linhas p e j (PS: Ver se da pra trocar uma linha de uma vez dps)
-					A[j][k], A[p][k] = A[p][k], A[j][k]
+				#	A[j][k], A[p][k] = A[p][k], A[j][k]
 
 				#Armazena as permutas de B
 				pivot[j], pivot[p] = pivot[p], pivot[j]
@@ -113,6 +115,11 @@ class Matriz(object):
 					for k in range(j+1, n):
 						#Coeficientes U[i][j] de U
 						A[i][k] = A[i][k] - multiplicador * A[j][k]
+
+		#print(pivot)
+		print(str(A[0]))
+		print(str(A[1]))
+		print(str(A[2]))
 
 		#Retorna matriz A = L/U e vetor Pivot[]
 		return A, pivot
@@ -163,10 +170,34 @@ class Matriz(object):
 		inversa = []
 
 		for i in range(0,self.lin):
-			y = self.substuicaoSucessivaPivotal(self.lin, LU, identidade[self.lin-1-i], pivo)
+			y = self.substuicaoSucessivaPivotal(self.lin, LU, identidade[i], pivo)
 			inversa.append( self.substituicaoRetroativa(self.lin, LU, y) )
 
 		return inversa
+
+
+	#Codigo do gauss jordan de pivoteamento
+	def gaussJordan(self, A, m, n):
+
+		for i in range(0, m-1):
+			for j in range(i+1, m):
+				multiplicador = A[j][i] / A[i][i]
+
+				for k in range(0, n):
+					A[j][k] = A[j][k] - multiplicador * A[i][k]
+
+		for i in range(m-1,1,-1):
+			for j in range(i, i-2):
+				
+				multiplicador = A[j][i]/A[i][i]
+				for k  in range(0,n):
+					a[j][k] = a[j][k] - multiplicador * a[i][k]
+
+		for i in range(0,m):
+			for j in range(0,n):
+				A[i][j] = A[i][j] / A[i][i]
+
+
 
 
 
@@ -181,7 +212,7 @@ class Matriz(object):
 3 6 9
 """
 
-m1 = [ [1,2,3], [2,1,4], [2,6,2]]
+m1 = [ [7,2,3], [5,1,4], [3,6,2]]
 
 ident = [ [1,2,3,4] ]
 
@@ -189,7 +220,7 @@ ident1 = Matriz(ident)
 
 mat1 = Matriz(m1)
 m = mat1.matrizInversa()
-print(str(m))
+#print(str(m))
 
 
 
