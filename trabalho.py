@@ -9,6 +9,21 @@ class Matriz(object):
 		self.col = len(listas[0])
 		
 
+	#Função que cria uma matriz identidade de tamanho N
+	def criaIdentidade(self, n):
+
+		m = []
+		for i in range(0,n):
+			m.append([])
+			for j in range(0,n):
+				if(i==j):
+					m[i].append(1)
+				else:
+					m[i].append(0)
+
+		return m
+
+
 	#Função que multiplica uma matriz por um escalar OK
 	def multEscalar(self, escalar):
 
@@ -56,11 +71,106 @@ class Matriz(object):
 		return temp
 
 
-	#Função 
+	#Função que retorna o produto escalar de dois vetores OK
 	def produtoEscalar(self,vetor):
 
 		return self.multiplicaMatriz(vetor)[0][0]
+
+
+	#Função que será utilizada para calculo da matriz inversa parte da decomposição LU (Acho que ta ok)
+	def decomposicaoLU(self,n,A):
+
+		pivot = []
+
+		#Inicialização ordenada de pivot[]
+		for i in range(0,n):
+			pivot.append(i)
+
+		for j in range(0,n-2):
+			
+			#Escolha do pivô
+			p, maior = j+1, abs(A[0][j])
+			for k in range(j+1,n):
+				if(abs(A[k][j]) > maior):
+					maior = abs(A[k][j])
+					p = k
+
+			if(p != j):
+				for k in range(0, n):
+					#Troca das linhas p e j (PS: Ver se da pra trocar uma linha de uma vez dps)
+					A[j][k], A[p][k] = A[p][k], A[j][k]
+
+				#Armazena as permutas de B
+				pivot[j], pivot[p] = pivot[p], pivot[j]
+
+			if(abs(A[j][j]) != 0):
+				for i in range(j+1, n):
+					#Pivoteamento por eliminação de Gauss
+					multiplicador = A[i][j] / A[j][j]
+					#Multiplicadores m[i][j] de L
+					A[i][j] = A[i][j] * multiplicador
+
+					for k in range(j+1, n):
+						#Coeficientes U[i][j] de U
+						A[i][k] = A[i][k] - multiplicador * A[j][k]
+
+		#Retorna matriz A = L/U e vetor Pivot[]
+		return A, pivot
+
+
+	#1 parte do algoritimo que fará a inversa da matriz
+	def substuicaoSucessivaPivotal(self, n, L, b, pivot):
+		#Solução do sistema Triangular inferior
+		k = pivot[0]
+		y = [0]*(n)
+		y[0] = b[k]
+
+		for i in range(1,n):
+			soma = 0
+
+			for j in range(0, i-1):
+				soma += L[i][j] * y[j]
+
+			#Obtém indice de b para o i-ésimo pivô
+			k = pivot[i]
+			y[i] = b[k] - soma
+
+		return y
+
+
+	#Segunda parte do algoritimo que fará a inversa da matriz
+	def substituicaoRetroativa(self, n, U, y):
+
+		x = [0]*(n)
+		x[n-1] = y[n-1] / U[n-1][n-1]
+
+		for i in range(n-2, 0, -1):
+			soma = 0
+
+			for j in range(i+1, n):
+				soma += U[i][j] * x[j]
+
+			x[i] = (y[i] - soma) / U[i][i]
 		
+		return x
+
+
+	#Função que usa a decomposição LU para retornar a matriz inversa
+	def matrizInversa(self):
+
+		LU, pivo = self.decomposicaoLU(self.lin,self.m)
+		identidade = self.criaIdentidade(self.lin)
+		inversa = []
+
+		for i in range(0,self.lin):
+			y = self.substuicaoSucessivaPivotal(self.lin, LU, identidade[self.lin-1-i], pivo)
+			inversa.append( self.substituicaoRetroativa(self.lin, LU, y) )
+
+		return inversa
+
+
+
+
 """
 1 2 3
 4 5 6
@@ -70,6 +180,19 @@ class Matriz(object):
 2 5 8 
 3 6 9
 """
+
+m1 = [ [1,2,3], [2,1,4], [2,6,2]]
+
+ident = [ [1,2,3,4] ]
+
+ident1 = Matriz(ident)
+
+mat1 = Matriz(m1)
+m = mat1.matrizInversa()
+print(str(m))
+
+
+
 
 def menuzinho():
 
@@ -85,21 +208,9 @@ def menuzinho():
 			matriz = carregarArquivo()
 			s.calcula()
 			s.mostra()
-		elif:
+		elif(op==2):
 			matriz = modificaModelo()
 			s.calcula()
 			s.mostra()
 
-
-
-
-menuzinho()
-
-m1 = [ [1], [1], [2], [3] ]
-
-ident = [ [1,2,3,4] ]
-
-ident1 = Matriz(ident)
-
-mat1 = Matriz(m1)
-print(str(ident1.produtoEscalar(mat1)))
+#menuzinho()
