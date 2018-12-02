@@ -1,4 +1,5 @@
 
+from copy import *
 
 class Matriz(object):
 	"""Classe que implementará as operações básicas de matrizes."""
@@ -117,9 +118,9 @@ class Matriz(object):
 						A[i][k] = A[i][k] - multiplicador * A[j][k]
 
 		#print(pivot)
-		print(str(A[0]))
-		print(str(A[1]))
-		print(str(A[2]))
+		#print(str(A[0]))
+		#print(str(A[1]))
+		#print(str(A[2]))
 
 		#Retorna matriz A = L/U e vetor Pivot[]
 		return A, pivot
@@ -165,19 +166,65 @@ class Matriz(object):
 	#Função que usa a decomposição LU para retornar a matriz inversa
 	def matrizInversa(self):
 
-		LU, pivo = self.decomposicaoLU(self.lin,self.m)
+		#LU, pivo = self.decomposicaoLU(self.lin,self.m)
 		identidade = self.criaIdentidade(self.lin)
 		inversa = []
 
 		for i in range(0,self.lin):
-			y = self.substuicaoSucessivaPivotal(self.lin, LU, identidade[i], pivo)
-			inversa.append( self.substituicaoRetroativa(self.lin, LU, y) )
+			#y = self.substuicaoSucessivaPivotal(self.lin, LU, identidade[i], pivo)
+			#inversa.append( self.substituicaoRetroativa(self.lin, LU, y) )
+			X = deepcopy(self.m)
+			
+			for j in range(0, len(X)):
+				X[j].append(identidade[i][j])
 
-		return inversa
+			pedaco = self.gaussJordan(X)
+			col = []
+			for el in X:
+				col.append(el[-1])
+
+			inversa.append(col)
+
+		return Matriz(inversa).transpostaMatriz()
 
 
-	#Codigo do gauss jordan de pivoteamento
-	def gaussJordan(self, A, m, n):
+	#Codigo do gauss jordan de pivoteamento para matriz inversa
+	def gaussJordan(self, m):
+		"""
+		Retorna True caso sucesso e False caso 'm' seja singular.
+		Por parâmetros tem m que é a lista de listas que contém a matriz
+		"""
+		
+		singular = 1.0/(10**10)
+
+		(lin, col) = (len(m), len(m[0]))
+		for i in range(0,lin):
+			limiteLinha = i
+			for j in range(i+1, lin):    # Acha o maior pivô
+				if abs(m[j][i]) > abs(m[limiteLinha][i]):
+					limiteLinha = j
+			(m[i], m[limiteLinha]) = (m[limiteLinha], m[i])
+			if abs(m[i][i]) <= singular:     # Singular?
+				return False
+			
+			for j in range(i+1, lin):    # Elimina coluna i
+				c = m[j][i] / m[i][i]
+				for x in range(i, col):
+					m[j][x] -= m[i][x] * c
+		
+		for i in range(lin-1, 0-1, -1): # Substituição retroativa
+			c  = m[i][i]
+			for j in range(0,i):
+				for x in range(col-1, i-1, -1):
+					m[j][x] -=  m[i][x] * m[j][i] / c
+			m[i][i] /= c
+			for x in range(lin, col):       # Normaliza linha i
+				m[i][x] /= c
+
+		return True
+
+		
+	def gaussJordan2(self, A, m, n):
 
 		for i in range(0, m-1):
 			for j in range(i+1, m):
@@ -187,15 +234,19 @@ class Matriz(object):
 					A[j][k] = A[j][k] - multiplicador * A[i][k]
 
 		for i in range(m-1,1,-1):
-			for j in range(i, i-2):
+			for j in range(i-1, 0, -1):
 				
-				multiplicador = A[j][i]/A[i][i]
+				multiplicador = A[j][i] / A[i][i]
 				for k  in range(0,n):
-					a[j][k] = a[j][k] - multiplicador * a[i][k]
+					A[j][k] = A[j][k] - multiplicador * A[i][k]
 
 		for i in range(0,m):
 			for j in range(0,n):
 				A[i][j] = A[i][j] / A[i][i]
+
+		return A
+
+		
 
 
 
@@ -220,7 +271,7 @@ ident1 = Matriz(ident)
 
 mat1 = Matriz(m1)
 m = mat1.matrizInversa()
-#print(str(m))
+print(str(m))
 
 
 
