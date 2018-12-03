@@ -8,6 +8,16 @@ class Matriz(object):
 		self.m = listas
 		self.lin = len(listas)
 		self.col = len(listas[0])
+
+
+	#Função que retorna a forma escrita de uma matriz
+	def __str__(self):
+		string = ''
+		for i in m:
+			for j in i:
+				string += str(j)
+			string += '\n'
+		return string
 		
 
 	#Função que cria uma matriz identidade de tamanho N
@@ -88,8 +98,7 @@ class Matriz(object):
 			pivot.append(i)
 
 		for j in range(0,n-2):
-			
-			print('passei')
+		
 			#Escolha do pivô
 			p, maior = j, abs(A[0][j])
 			for k in range(j+1,n):
@@ -246,7 +255,139 @@ class Matriz(object):
 
 		return A
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class Simplex(object):
+	"""docstring for Simplex"""
+	#Model criaModelo(Matrix A, Matrix b, Matrix c, Matrix base, Matrix naoBase, Matrix artificiais)
+	def __init__(self, A, b, c, base, naoBase, artificiais):	
+
+		self.A = A          			 # Matriz A.
+		self.b = b            			 # Vetor de igualdade das restricoes.
+		self.custo = custo        		 # Vetor de custo (min).
+		self.base = base   			     # Vetor com as variaveis na base.
+		self.naoBase = naoBase  	     # Vetor com as variaveis nao-base.
+		self.artificiais = artificiais	 # Vetor com as variaveis artificiais.
+		self.B = []   			         # Matriz das colunas de cada variavel base.
+		self.solucao = None    			 # Vetor solucao das variaveis presentes na base.
 		
+		self.B = [[0]*self.A.lin]*self.A.lin
+
+
+	#Calcula a função objetivo do modelo
+	def calcObjetivo(self):
+
+		objt = 0
+
+		for i in range(self.base.lin):
+			base = self.base[i][0]
+			objt += self.custo[base][i] * self.solucao[i][0]
+
+		return objt
+
+
+	#Função para imprimir o modelo no seu estado atual
+	def imprimeModelo(self):
+		print("\nMatriz A:\n");
+		print(self.A);
+
+		print("\nVetor b:\n");
+		print(self.b);
+
+		print("\nVetor custo:\n");
+		print(self.custo);
+
+		print("\nVetor base (indices contam a partir de 0):\n");
+		print(self.base);
+
+		print("\nVetor nao-base (indices contam a partir de 0):\n");
+		print(self.naoBase);
+
+		print("\nMatriz basica:\n");
+		print(self.B);
+
+
+	# Checa se existe um valor positivo na linha 'x':
+	def existePositivo(self,x):
+
+		for i in range(x.lin):
+			if x[i][0] > 0:
+				return 1
+
+		return 0
+
+	#Checa se existe uma variavel artificial na base:
+	def artificialNaBase(self):
+
+		for i in range(self.artificiais.lin):
+			var = self.artificiais.m[i][0]
+			for j in range(self.base.lin):
+				if(var == self.base[j][0]):
+					return 1
+
+		return 0
+
+	def geraMatrizBase(self) {
+	# Copia as colunas da base 'modelo -> base' para a matriz B:
+
+	valor = 0
+
+	for i in range(self.A.lin):
+		base = self.base.m[i][0]
+
+		for j in range(self.A.lin):
+			valor = self.A.m[j][base]
+			self.B.m[j][i] = valor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -262,19 +403,6 @@ class Matriz(object):
 2 5 8 
 3 6 9
 """
-
-m1 = [ [7,2,3], [5,1,4], [3,6,2]]
-
-ident = [ [1,2,3,4] ]
-
-ident1 = Matriz(ident)
-
-mat1 = Matriz(m1)
-m = mat1.matrizInversa()
-print(str(m))
-
-
-
 
 def menuzinho():
 
