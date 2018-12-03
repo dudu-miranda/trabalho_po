@@ -341,6 +341,7 @@ class Simplex(object):
 
 		return 0
 
+
 	#Checa se existe uma variavel artificial na base:
 	def artificialNaBase(self):
 
@@ -352,8 +353,9 @@ class Simplex(object):
 
 		return 0
 
-	def geraMatrizBase(self) {
+
 	# Copia as colunas da base 'modelo -> base' para a matriz B:
+	def geraMatrizBase(self):
 
 	valor = 0
 
@@ -364,6 +366,73 @@ class Simplex(object):
 			valor = self.A.m[j][base]
 			self.B.m[j][i] = valor
 
+
+	#Checa se existe uma variavel nao base com custo reduzido zero:
+	def existeNaoBase(self, Matriz custoReduzido):
+
+		if custoReduzido == None:
+			return 0
+
+		for i in range(custoReduzido.col):
+			custo = custoReduzido.m[0][i]
+		
+			# Trata valores muito pequenos de custo (i.e: 1e-16).
+			# Arredonda o valor para 5 casas decimais:
+			fac = pow(10, 5);
+			custo = round(custo * fac) / fac;
+
+			# Encontrou um custo reduzido igual a zero:
+			if(custo == 0):
+				# Olha se o indice 'i' existe na base:
+				existe = 0
+				for j in range(self.base.lin):
+					if self.base.m[j][0] == i:
+						existe = 1
+						break 
+				
+				if(not existe)
+					return 1;
+
+		return 0
+
+
+	#Saida do programa
+	def outputModelo(self, iteracoes, entrada, saida):
+		if((self == None) || (self.solucao == None)):
+			return
+
+		arq = open(saida, "w")
+
+		if iteracoes == -1:
+			arq.write("Modelo: "+str(entrada)+"\nSolucao inexistente\n")
+			
+		elif iteracoes == -2:
+			arq.write("Modelo: "+str(entrada)+"\nSolucao ilimitada\n")
+		
+		elif iteracoes == -3:
+			arq.write("Modelo: "+str(entrada)+"\nMultiplos otimos\n")
+
+		else:
+			arq.write("Modelo: "+str(entrada)+"\nSolucao unica otima encontrada\n\nIteracoes: "+str(iteracoes))
+
+		arq.write("\nOtimo: "+str(self.calcObjetivo)+"\n\n")
+
+		# Exibe o valor das variaveis:
+		int i, j, k;
+		for i in range(self.custo.lin):
+			valor = 0;
+
+			# Procura se a variavel 'i' esta na base:
+			for j in range(self.base.lin):
+				base = self.base.m[j][0]
+				if(i == base):
+					# Pega o valor da base na solucao:
+					valor = self.solucao.m[j][0]
+				
+			arq.write("x[" + str(i+1) + "] = " + str(valor) + "\n")		
+
+		arq.close();
+	
 
 
 
