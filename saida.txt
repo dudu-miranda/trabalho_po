@@ -1,0 +1,11 @@
+Modelo: goldbard-pg104.mod
+Solucao unica otima encontrada
+
+Iteracoes: 1
+Otimo: -36.0
+
+x[1] = 2.0
+x[2] = 6.0
+x[3] = 2.0
+x[4] = 0
+x[5] = 0

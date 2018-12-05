@@ -1,4 +1,5 @@
 
+import sys
 from copy import *
 
 class Matriz(object):
@@ -286,32 +287,12 @@ class Matriz(object):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class Simplex(object):
 	"""docstring for Simplex"""
 	#Model criaModelo(Matrix A, Matrix b, Matrix c, Matrix base, Matrix naoBase, Matrix artificiais)
-	def __init__(self, arquivo):	
+	def __init__(self, arquivoIN, arquivoOUT):	
 
-		self.A, self.b, self.custo, self.base, self.naoBase, self.artificiais = self.carregaModelo(arquivo)
+		self.A, self.b, self.custo, self.base, self.naoBase, self.artificiais = self.carregaModelo(arquivoIN)
 
 		#print(self.A)
 		#print(self.b)
@@ -319,20 +300,20 @@ class Simplex(object):
 		#print(self.base)
 		#print(self.naoBase)
 		#print(self.artificiais)
-
 		
-		self.A          	 # Matriz A.
+		self.A     								     	 # Matriz A.
 		self.b = self.b.transpostaMatriz()          	 # Vetor de igualdade das restricoes.
 		self.custo = self.custo.transpostaMatriz()    	 # Vetor de custo (min).
 		self.base = self.base.transpostaMatriz()   	     # Vetor com as variaveis na base.
-		self.naoBase = self.naoBase.transpostaMatriz()	     # Vetor com as variaveis nao-base.
-		self.artificiais	 # Vetor com as variaveis artificiais.
-		self.B = []   	     # Matriz das colunas de cada variavel base.
-		self.solucao = None	 # Vetor solucao das variaveis presentes na base.
+		self.naoBase = self.naoBase.transpostaMatriz()	 # Vetor com as variaveis nao-base.
+		self.artificiais								 # Vetor com as variaveis artificiais.
+		self.B = []   	   								 # Matriz das colunas de cada variavel base.
+		self.solucao = None	 							 # Vetor solucao das variaveis presentes na base.
 		
 		self.B = self.A.criaMatriz0(self.A.lin,self.A.lin)
 
-		self.simplex()
+		iteracoes = self.simplex()
+		self.outputModelo(iteracoes, arquivoIN, arquivoOUT)
 
 
 	# Sub-rotinas:
@@ -380,7 +361,7 @@ class Simplex(object):
 		if(a > 0):
 			temp = parq.readline().split()
 			for k in range(a):
-				artificiais.m[0][k] = valor - 1	
+				artificiais.m[k][0] = int(temp[k]) - 1	
 
 		# Cria matriz A:
 		A = []
@@ -391,7 +372,7 @@ class Simplex(object):
 		#Converte esses elementos para inteiro
 		for linha in range(len(A)):
 			for el in range(len(A[0])):
-				A[linha][el] = int(A[linha][el])
+				A[linha][el] = float(A[linha][el])
 
 
 		parq.close()
@@ -622,7 +603,7 @@ class Simplex(object):
 		for i in range(self.artificiais.lin):
 			var = self.artificiais.m[i][0]
 			for j in range(self.base.lin):
-				if(var == self.base[j][0]):
+				if(var == self.base.m[j][0]):
 					return 1
 
 		return 0
@@ -716,7 +697,7 @@ class Simplex(object):
 		else:
 			arq.write("Modelo: "+str(entrada)+"\nSolucao unica otima encontrada\n\nIteracoes: "+str(iteracoes))
 
-		arq.write("\nOtimo: "+str(self.calcObjetivo)+"\n\n")
+		arq.write("\nOtimo: "+str(self.calcObjetivo())+"\n\n")
 
 		# Exibe o valor das variaveis:
 		for i in range(self.custo.lin):
@@ -731,34 +712,11 @@ class Simplex(object):
 				
 			arq.write("x[" + str(i+1) + "] = " + str(valor) + "\n")		
 
-		arq.close();
-	
+		arq.close()
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-1 2 3
-4 5 6
-7 8 9
-
-1 4 7
-2 5 8 
-3 6 9
-"""
 
 def menuzinho():
 
@@ -781,5 +739,6 @@ def menuzinho():
 
 #menuzinho()
 
-
-s = Simplex("goldbard-pg104.mod")
+arqEntrada = sys.argv[1]
+arqSaida = sys.argv[2]
+s = Simplex(arqEntrada,arqSaida)
