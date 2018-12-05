@@ -13,9 +13,9 @@ class Matriz(object):
 	#Função que retorna a forma escrita de uma matriz
 	def __str__(self):
 		string = ''
-		for i in m:
+		for i in self.m:
 			for j in i:
-				string += str(j)
+				string += str(j) + ' '
 			string += '\n'
 		return string
 		
@@ -308,6 +308,13 @@ class Simplex(object):
 
 		self.A, self.b, self.custo, self.base, self.naoBase, self.artificiais = self.carregaModelo(arquivo)
 
+		print(self.A)
+		print(self.b)
+		print(self.custo)
+		print(self.base)
+		print(self.naoBase)
+		print(self.artificiais)
+
 		self.A          	 # Matriz A.
 		self.b          	 # Vetor de igualdade das restricoes.
 		self.custo      	 # Vetor de custo (min).
@@ -317,242 +324,243 @@ class Simplex(object):
 		self.B = []   	     # Matriz das colunas de cada variavel base.
 		self.solucao = None	 # Vetor solucao das variaveis presentes na base.
 		
-		self.B = [[0]*self.A.lin]*self.A.lin
+		self.B = Matriz([[0]*self.A.lin]*self.A.lin)
+
+		self.simplex()
 
 
 	# Sub-rotinas:
 	def carregaModelo(self, arquivo):
-	# Abre o arquivo para leitura:
-	parq = open(arquivo, "r");
+		# Abre o arquivo para leitura:
+		parq = open(arquivo, "r");
 
-	# Caso o arquivo nao exista, retorna NULL:
-	if(parq == None):
-		print("Arquivo nao encontrado.\n")
-		return None
+		# Caso o arquivo nao exista, retorna NULL:
+		if(parq == None):
+			print("Arquivo nao encontrado.\n")
+			return None
 
-	# Determinar quantidade de linhas e colunas;
-	temp = parq.readline()
-	i,j,a = temp.split()
-	i, j, a = int(i), int(j), int(a)
+		# Determinar quantidade de linhas e colunas;
+		temp = parq.readline()
+		i,j,a = temp.split()
+		i, j, a = int(i), int(j), int(a)
 
-	# Cria vetor b:
-	b = Matriz([[0]*i]*1)
-	temp = parq.readline().split()
-	for k in range(temp):
-		b.m[k][0] = float(temp[k])
-
-	# Cria vetor de custo:
-	c = Matriz([[0]*j]*1)
-	temp = parq.readline().split()
-	for k in range(temp):
-		c.m[k][0] = float(temp[k])
-
-	# Cria vetor base:
-	base = Matriz([[0]*i]*1)
-	temp = parq.readline().split()
-	for k in range(i):
-		base.m[k][0] = int(temp[k])- 1
-
-	# Cria vetor nao-base:
-	naoBase = Matriz([[0]*(j - i)]*1)
-	temp = parq.readline().split()
-	for k in range(j - i):
-		naoBase.m[k][0] = int(temp[k]) - 1	
-
-	# Cria vetor de variaveis artificiais:
-	artificiais = Matriz([[0]*a]*1)
-	if(a > 0):
+		# Cria vetor b:
+		b = Matriz([[0]*i]*1)
 		temp = parq.readline().split()
-		for k in range(a):
-			artificiais.m[k][0] = valor - 1	
+		for k in range(0,len(temp)):
+			b.m[0][k] = float(temp[k])
 
-	# Cria matriz A:
-	A = Matriz([[0]*i]*j)
-	# Le e salva cada elemento na matriz:
-	for i in A.lin:
+		# Cria vetor de custo:
+		c = Matriz([[0]*j]*1)
 		temp = parq.readline().split()
-		for j in A.col:
-			A.m[i][j] = valor
+		for k in range(len(temp)):
+			c.m[0][k] = float(temp[k])
+
+		# Cria vetor base:
+		base = Matriz([[0]*i]*1)
+		temp = parq.readline().split()
+		for k in range(i):
+			base.m[0][k] = int(temp[k])- 1
+
+		# Cria vetor nao-base:
+		naoBase = Matriz([[0]*(j - i)]*1)
+		temp = parq.readline().split()
+		for k in range(j - i):
+			naoBase.m[0][k] = int(temp[k]) - 1	
+
+		# Cria vetor de variaveis artificiais:
+		artificiais = Matriz([[0]*a]*1)
+		if(a > 0):
+			temp = parq.readline().split()
+			for k in range(a):
+				artificiais.m[0][k] = valor - 1	
+
+		# Cria matriz A:
+		A = []
+		# Le e salva cada elemento na matriz:
+		for i in range(0,i):
+			A.append(parq.readline().split())
 
 
-	parq.close()
+		parq.close()
+		A = Matriz(A)
+		print(A.m)
 
-
-	return A, b, c, base, naoBase, artificiais
+		return A, b, c, base, naoBase, artificiais
 
 
 
 
 	def simplex(self):
-	''' 
-	 * Executa o simplex e atualiza o campo 'solucao' do modelo.
-	 * Retorna -1 se o modelo nao possuir solucao;
-	 * Retorna -2 se a solucao for ilimitada;
-	 * Retorna -3 se houverem multiplas solucoes;
-	 * Retorna >= 0 se houver uma unica solucao otima. Retorna numero de iteracoes.
-	 * [DEBUG] matImprime(Matrix m) mostra qualquer matriz/vetor no console.
-	 * [DEBUG] imprimeModelo(Model m) mostra todos os dados do simplex na iteracao atual.
-	'''
+		''' 
+		 * Executa o simplex e atualiza o campo 'solucao' do modelo.
+		 * Retorna -1 se o modelo nao possuir solucao;
+		 * Retorna -2 se a solucao for ilimitada;
+		 * Retorna -3 se houverem multiplas solucoes;
+		 * Retorna >= 0 se houver uma unica solucao otima. Retorna numero de iteracoes.
+		 * [DEBUG] matImprime(Matrix m) mostra qualquer matriz/vetor no console.
+		 * [DEBUG] imprimeModelo(Model m) mostra todos os dados do simplex na iteracao atual.
+		'''
 
-	m = self.A.lin
-	n = self.A.col
-	iteracoes = 0
+		m = self.A.lin
+		n = self.A.col
+		iteracoes = 0
 
-	while True:
-		# Calcula a B^-1:
-		self.geraMatrizBase();
-		invB = self.B.matrizInversa()
+		while True:
+			# Calcula a B^-1:
+			self.geraMatrizBase();
+			invB = self.B.matrizInversa()
 
-		# (REQUISITO 03) Calcular a SBF inicial (invB x b):
-		self.solucao = invB.multiplicaMatriz(self.b)
+			# (REQUISITO 03) Calcular a SBF inicial (invB x b):
+			self.solucao = invB.multiplicaMatriz(self.b)
 
-		# Calcula o valor da funcao objetivo:
-		objetivo = self.calcObjetivo();
+			# Calcula o valor da funcao objetivo:
+			objetivo = self.calcObjetivo();
 
-		# Monta o vetor de custo basico:
-		custoBase = Matriz.criaMatriz0(self.base.lin,1)
-		
-		for i in range(m):
-			indice = self.base.m[i][j]
-			valor = self.custo.m[indice][0]
-			custoBase.m[i][0] = valor
-
-		# Determina qual variavel entra na base:
-		custoBaseT = custoBase.transpostaMatriz()
-		custoReduzido = Matriz.criaMatriz0(1, n)
-		menorCusto = 99999999
-		indiceMenor = -1
-
-
-		for i in range(self.naoBase.lin):
-
-			indice = self.naoBase.m[i][0]
-
-			# Custo do indice na funcao objetivo:
-			custo = self.custo.m[indice][0]
-
-			# Coluna do indice nao basico da matriz A:
-			Aj = self.A.getColuna(indice)
-
-			# (REQUISITO 05) Direcao:
-			direcao = invB.multiplicaMatriz(Aj)
-
-			# resOp1 = custoBase x invB:
-			resOp1 = custoBaseT.multiplicaMatriz(invB)
-
-			# resOp2 = custoBase x invB x Aj:
-			resOp2 = resOp1,multiplicaMatriz(Aj)
+			# Monta o vetor de custo basico:
+			custoBase = Matriz.criaMatriz0(self.base.lin,1)
 			
-			# (REQUISITO 04) Custo reduzido:
-			custo = custo - resOp2.m[0][0]
-			custoReduzido.m[0][indice] = custo
-			
-			# Trata valores de custo muito pequenos e negativos (i.e: -1e-16).
-			# (REQUISITO 09) Degeneracao - Garantir que custos proximos de 0 sejam +0.
-			# Arredonda o valor para 5 casas decimais.
-			fac = pow(10, 5)
-			custo = round(custo * fac) / fac
+			for i in range(m):
+				indice = self.base.m[i][j]
+				valor = self.custo.m[indice][0]
+				custoBase.m[i][0] = valor
 
-			# (REQUISITO 09) Degeneracao - Custos reduzidos iguais a zero nao entram na base.
-			# Se o custo for negativo:
-			if(custo < 0):
-				if(custo < menorCusto):
-					# Atualiza variavel candidata para entrar na base:
-					indiceMenor = indice
-					menorCusto = custo
+			# Determina qual variavel entra na base:
+			custoBaseT = custoBase.transpostaMatriz()
+			custoReduzido = Matriz.criaMatriz0(1, n)
+			menorCusto = 99999999
+			indiceMenor = -1
+
+
+			for i in range(self.naoBase.lin):
+
+				indice = self.naoBase.m[i][0]
+
+				# Custo do indice na funcao objetivo:
+				custo = self.custo.m[indice][0]
+
+				# Coluna do indice nao basico da matriz A:
+				Aj = self.A.getColuna(indice)
+
+				# (REQUISITO 05) Direcao:
+				direcao = invB.multiplicaMatriz(Aj)
+
+				# resOp1 = custoBase x invB:
+				resOp1 = custoBaseT.multiplicaMatriz(invB)
+
+				# resOp2 = custoBase x invB x Aj:
+				resOp2 = resOp1,multiplicaMatriz(Aj)
+				
+				# (REQUISITO 04) Custo reduzido:
+				custo = custo - resOp2.m[0][0]
+				custoReduzido.m[0][indice] = custo
+				
+				# Trata valores de custo muito pequenos e negativos (i.e: -1e-16).
+				# (REQUISITO 09) Degeneracao - Garantir que custos proximos de 0 sejam +0.
+				# Arredonda o valor para 5 casas decimais.
+				fac = pow(10, 5)
+				custo = round(custo * fac) / fac
+
+				# (REQUISITO 09) Degeneracao - Custos reduzidos iguais a zero nao entram na base.
+				# Se o custo for negativo:
+				if(custo < 0):
+					if(custo < menorCusto):
+						# Atualiza variavel candidata para entrar na base:
+						indiceMenor = indice
+						menorCusto = custo
+					
+				
+				
+				# [DEBUG] (REQUISITO 05) Mostra direcao encontrada:
+				# printf("Direcao factivel %d, custo reduzido %lf\n", indice, custo);
+				# matImprime(direcao);
+
+				# Libera matrizes utilizadas nas operacoes:
+				Aj = None
+				resOp1 = None
+				resOp2 = None
+				direcao = None
+			
+
+			# [DEBUG] Mostra o custo reduzido encontrado:
+			# printf("Custo reduzido:\n");
+			# matImprime(custoReduzido);
+
+			# Nao houve nenhum indice com custo reduzido negativo.
+			# Solucao otima encontrada:
+			if indiceMenor == -1:
+				objetivo = self.calcObjetivo()
+
+				# (REQUISITO 09) - Solucao inexistente (Variaveis artificiais presentes na solucao):
+				if self.artificialNaBase():
+					printf("[Simplex] Solucao inexistente.\n")
+					return -1
+				
+				# (REQUISITO 09) - Multiplos Otimos:
+				elif self.existeNaoBase0(custoReduzido):
+					printf("[Simplex] Multiplos Otimos.\nIteracoes = %d\nCusto otimo = %lf\n", iteracoes, objetivo);
+					return -3;
+				
+				# (REQUISITO 09) - Solucao Otima Unica:
+				else:
+					printf("[Simplex] Solucao Otima Unica.\nIteracoes = %d\nCusto otimo = %lf\n", iteracoes, objetivo);
+					return iteracoes;
 				
 			
-			
-			# [DEBUG] (REQUISITO 05) Mostra direcao encontrada:
-			# printf("Direcao factivel %d, custo reduzido %lf\n", indice, custo);
-			# matImprime(direcao);
 
-			# Libera matrizes utilizadas nas operacoes:
+			custoBaseT = None
+			custoReduzido = None
+
+			# [DEBUG] Indice da variavel a entrar na base:
+			# printf("Entra na base %d, custo = %lf\n", indiceMenor, menorCusto);
+
+			# (REQUISITO 09) - Solucao Ilimitada:
+			Aj = self.A.getColuna(indiceMenor)
+			u = invB.multiplicaMatriz(Aj)
+			if not self.existePositivo(u):
+				printf("[Simplex] Solucao Ilimitada.\nCusto otimo = -Infinito\n");
+				return -2;
+			
 			Aj = None
-			resOp1 = None
-			resOp2 = None
-			direcao = None
-		
+			u = None
 
-		# [DEBUG] Mostra o custo reduzido encontrado:
-		# printf("Custo reduzido:\n");
-		# matImprime(custoReduzido);
+			# (REQUISITO 06) Determina o valor de theta:
+			theta = 99999999
+			indice = -1;
 
-		# Nao houve nenhum indice com custo reduzido negativo.
-		# Solucao otima encontrada:
-		if indiceMenor == -1:
-			objetivo = self.calcObjetivo()
-
-			# (REQUISITO 09) - Solucao inexistente (Variaveis artificiais presentes na solucao):
-			if self.artificialNaBase():
-				printf("[Simplex] Solucao inexistente.\n")
-				return -1
+			for i in range(m):
 			
-			# (REQUISITO 09) - Multiplos Otimos:
-			elif self.existeNaoBase0(custoReduzido):
-				printf("[Simplex] Multiplos Otimos.\nIteracoes = %d\nCusto otimo = %lf\n", iteracoes, objetivo);
-				return -3;
+				if u.m[i][0] > 0:
+
+					razao = self.solucao.m[i][0] / u.m[i][0]
+
+					if(razao < theta):
+						theta = razao
+						indice = self.base.m[i][0]
+
+			# [DEBUG] Indice da variavel a sair da base:
+			# printf("Variavel sai da base: %d, theta = %lf\n", indice, theta);
+
+			# (REQUISITO 07) Atualiza a base:
+			for i in range(m):
+
+				if self.base.m[i][0] == indice:
+					self.solucao.m[i][0] = theta
+					self.base.m[i][0] = indiceMenor
+				
+
+			# (REQUISITO 07) Atualiza o conjunto de variaveis nao-basicas:
+			for i in range(n - m):
 			
-			# (REQUISITO 09) - Solucao Otima Unica:
-			else:
-				printf("[Simplex] Solucao Otima Unica.\nIteracoes = %d\nCusto otimo = %lf\n", iteracoes, objetivo);
-				return iteracoes;
-			
-		
+				if self.naoBase.m[i][0] == indiceMenor:
+					self.naoBase.m[i][0] = indice
+				
+			# Libera a matriz inversa utilizada para a iteracao atual:
+			invB = None
 
-		custoBaseT = None
-		custoReduzido = None
+			iteracoes+= 1
 
-		# [DEBUG] Indice da variavel a entrar na base:
-		# printf("Entra na base %d, custo = %lf\n", indiceMenor, menorCusto);
-
-		# (REQUISITO 09) - Solucao Ilimitada:
-		Aj = self.A.getColuna(indiceMenor)
-		u = invB.multiplicaMatriz(Aj)
-		if not self.existePositivo(u):
-			printf("[Simplex] Solucao Ilimitada.\nCusto otimo = -Infinito\n");
-			return -2;
-		
-		Aj = None
-		u = None
-
-		# (REQUISITO 06) Determina o valor de theta:
-		theta = 99999999
-		indice = -1;
-
-		for i in range(m):
-		
-			if u.m[i][0] > 0:
-
-				razao = self.solucao.m[i][0] / u.m[i][0]
-
-				if(razao < theta):
-					theta = razao
-					indice = self.base.m[i][0]
-
-		# [DEBUG] Indice da variavel a sair da base:
-		# printf("Variavel sai da base: %d, theta = %lf\n", indice, theta);
-
-		# (REQUISITO 07) Atualiza a base:
-		for i in range(m):
-
-			if self.base.m[i][0] == indice:
-				self.solucao.m[i][0] = theta
-				self.base.m[i][0] = indiceMenor
-			
-
-		# (REQUISITO 07) Atualiza o conjunto de variaveis nao-basicas:
-		for i in range(n - m):
-		
-			if self.naoBase.m[i][0] == indiceMenor:
-				self.naoBase.m[i][0] = indice
-			
-		# Libera a matriz inversa utilizada para a iteracao atual:
-		invB = None
-
-		iteracoes++;
-
-	return -1;
+		return -1;
 
 
 	#Calcula a função objetivo do modelo
@@ -613,18 +621,18 @@ class Simplex(object):
 	# Copia as colunas da base 'modelo -> base' para a matriz B:
 	def geraMatrizBase(self):
 
-	valor = 0
+		valor = 0
 
-	for i in range(self.A.lin):
-		base = self.base.m[i][0]
+		for i in range(self.A.lin):
+			base = self.base.m[i][0]
 
-		for j in range(self.A.lin):
-			valor = self.A.m[j][base]
-			self.B.m[j][i] = valor
+			for j in range(self.A.lin):
+				valor = self.A.m[j][base]
+				self.B.m[j][i] = valor
 
 
 	#Checa se existe uma variavel nao base com custo reduzido zero:
-	def existeNaoBase(self, Matriz custoReduzido):
+	def existeNaoBase(self, custoReduzido):
 
 		if custoReduzido == None:
 			return 0
@@ -646,7 +654,7 @@ class Simplex(object):
 						existe = 1
 						break 
 				
-				if(not existe)
+				if(not existe):
 					return 1;
 
 		return 0
@@ -654,7 +662,7 @@ class Simplex(object):
 
 	#Saida do programa
 	def outputModelo(self, iteracoes, entrada, saida):
-		if((self == None) || (self.solucao == None)):
+		if((self == None) or (self.solucao == None)):
 			return
 
 		arq = open(saida, "w")
@@ -674,7 +682,6 @@ class Simplex(object):
 		arq.write("\nOtimo: "+str(self.calcObjetivo)+"\n\n")
 
 		# Exibe o valor das variaveis:
-		int i, j, k;
 		for i in range(self.custo.lin):
 			valor = 0;
 
@@ -689,19 +696,6 @@ class Simplex(object):
 
 		arq.close();
 	
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -749,3 +743,6 @@ def menuzinho():
 			s.mostra()
 
 #menuzinho()
+
+
+s = Simplex("goldbard-pg104.mod")
