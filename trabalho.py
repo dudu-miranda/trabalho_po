@@ -14,9 +14,10 @@ class Matriz(object):
 	def __str__(self):
 		string = ''
 		for i in self.m:
+			string += '| '
 			for j in i:
 				string += str(j) + ' '
-			string += '\n'
+			string += '|\n'
 		return string
 		
 
@@ -308,23 +309,24 @@ class Simplex(object):
 
 		self.A, self.b, self.custo, self.base, self.naoBase, self.artificiais = self.carregaModelo(arquivo)
 
-		print(self.A)
-		print(self.b)
-		print(self.custo)
-		print(self.base)
-		print(self.naoBase)
-		print(self.artificiais)
+		#print(self.A)
+		#print(self.b)
+		#print(self.custo)
+		#print(self.base)
+		#print(self.naoBase)
+		#print(self.artificiais)
 
+		
 		self.A          	 # Matriz A.
-		self.b          	 # Vetor de igualdade das restricoes.
-		self.custo      	 # Vetor de custo (min).
-		self.base   	     # Vetor com as variaveis na base.
+		self.b = self.b.transpostaMatriz()          	 # Vetor de igualdade das restricoes.
+		self.custo = self.custo.transpostaMatriz()    	 # Vetor de custo (min).
+		self.base = self.base.transpostaMatriz()   	     # Vetor com as variaveis na base.
 		self.naoBase 	     # Vetor com as variaveis nao-base.
 		self.artificiais	 # Vetor com as variaveis artificiais.
 		self.B = []   	     # Matriz das colunas de cada variavel base.
 		self.solucao = None	 # Vetor solucao das variaveis presentes na base.
 		
-		self.B = Matriz([[0]*self.A.lin]*self.A.lin)
+		self.B = self.A.criaMatriz0(self.A.lin,self.A.lin)
 
 		self.simplex()
 
@@ -381,10 +383,14 @@ class Simplex(object):
 		for i in range(0,i):
 			A.append(parq.readline().split())
 
+		#Converte esses elementos para inteiro
+		for linha in range(len(A)):
+			for el in range(len(A[0])):
+				A[linha][el] = int(A[linha][el])
+
 
 		parq.close()
 		A = Matriz(A)
-		print(A.m)
 
 		return A, b, c, base, naoBase, artificiais
 
@@ -413,24 +419,23 @@ class Simplex(object):
 
 			# (REQUISITO 03) Calcular a SBF inicial (invB x b):
 			self.solucao = invB.multiplicaMatriz(self.b)
-
 			# Calcula o valor da funcao objetivo:
 			objetivo = self.calcObjetivo();
 
 			# Monta o vetor de custo basico:
-			custoBase = Matriz.criaMatriz0(self.base.lin,1)
+			custoBase = self.A.criaMatriz0(self.base.lin,1)
 			
 			for i in range(m):
-				indice = self.base.m[i][j]
+				indice = self.base.m[i][0]
 				valor = self.custo.m[indice][0]
 				custoBase.m[i][0] = valor
 
 			# Determina qual variavel entra na base:
 			custoBaseT = custoBase.transpostaMatriz()
-			custoReduzido = Matriz.criaMatriz0(1, n)
+			custoReduzido = self.A.criaMatriz0(1, n)
 			menorCusto = 99999999
 			indiceMenor = -1
-
+			#Breakpoint
 
 			for i in range(self.naoBase.lin):
 
@@ -567,10 +572,9 @@ class Simplex(object):
 	def calcObjetivo(self):
 
 		objt = 0
-
 		for i in range(self.base.lin):
-			base = self.base[i][0]
-			objt += self.custo[base][i] * self.solucao[i][0]
+			base = self.base.m[i][0]
+			objt += self.custo.m[base][0] * self.solucao.m[i][0]
 
 		return objt
 
@@ -622,7 +626,6 @@ class Simplex(object):
 	def geraMatrizBase(self):
 
 		valor = 0
-
 		for i in range(self.A.lin):
 			base = self.base.m[i][0]
 
