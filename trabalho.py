@@ -304,18 +304,82 @@ class Matriz(object):
 class Simplex(object):
 	"""docstring for Simplex"""
 	#Model criaModelo(Matrix A, Matrix b, Matrix c, Matrix base, Matrix naoBase, Matrix artificiais)
-	def __init__(self, A, b, c, base, naoBase, artificiais):	
+	def __init__(self, arquivo):	
 
-		self.A = A          			 # Matriz A.
-		self.b = b            			 # Vetor de igualdade das restricoes.
-		self.custo = custo        		 # Vetor de custo (min).
-		self.base = base   			     # Vetor com as variaveis na base.
-		self.naoBase = naoBase  	     # Vetor com as variaveis nao-base.
-		self.artificiais = artificiais	 # Vetor com as variaveis artificiais.
-		self.B = []   			         # Matriz das colunas de cada variavel base.
-		self.solucao = None    			 # Vetor solucao das variaveis presentes na base.
+		self.A, self.b, self.custo, self.base, self.naoBase, self.artificiais = self.carregaModelo(arquivo)
+
+		self.A          	 # Matriz A.
+		self.b          	 # Vetor de igualdade das restricoes.
+		self.custo      	 # Vetor de custo (min).
+		self.base   	     # Vetor com as variaveis na base.
+		self.naoBase 	     # Vetor com as variaveis nao-base.
+		self.artificiais	 # Vetor com as variaveis artificiais.
+		self.B = []   	     # Matriz das colunas de cada variavel base.
+		self.solucao = None	 # Vetor solucao das variaveis presentes na base.
 		
 		self.B = [[0]*self.A.lin]*self.A.lin
+
+
+	# Sub-rotinas:
+	def carregaModelo(self, arquivo):
+	# Abre o arquivo para leitura:
+	parq = open(arquivo, "r");
+
+	# Caso o arquivo nao exista, retorna NULL:
+	if(parq == None):
+		print("Arquivo nao encontrado.\n")
+		return None
+
+	# Determinar quantidade de linhas e colunas;
+	temp = parq.readline()
+	i,j,a = temp.split()
+	i, j, a = int(i), int(j), int(a)
+
+	# Cria vetor b:
+	b = Matriz([[0]*i]*1)
+	temp = parq.readline().split()
+	for k in range(temp):
+		b.m[k][0] = float(temp[k])
+
+	# Cria vetor de custo:
+	c = Matriz([[0]*j]*1)
+	temp = parq.readline().split()
+	for k in range(temp):
+		c.m[k][0] = float(temp[k])
+
+	# Cria vetor base:
+	base = Matriz([[0]*i]*1)
+	temp = parq.readline().split()
+	for k in range(i):
+		base.m[k][0] = int(temp[k])- 1
+
+	# Cria vetor nao-base:
+	naoBase = Matriz([[0]*(j - i)]*1)
+	temp = parq.readline().split()
+	for k in range(j - i):
+		naoBase.m[k][0] = int(temp[k]) - 1	
+
+	# Cria vetor de variaveis artificiais:
+	artificiais = Matriz([[0]*a]*1)
+	if(a > 0):
+		temp = parq.readline().split()
+		for k in range(a):
+			artificiais.m[k][0] = valor - 1	
+
+	# Cria matriz A:
+	A = Matriz([[0]*i]*j)
+	# Le e salva cada elemento na matriz:
+	for i in A.lin:
+		temp = parq.readline().split()
+		for j in A.col:
+			A.m[i][j] = valor
+
+
+	parq.close()
+
+
+	return A, b, c, base, naoBase, artificiais
+
 
 
 
