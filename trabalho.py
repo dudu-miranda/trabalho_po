@@ -23,6 +23,10 @@ class Matriz(object):
 
 	#Cria matriz cheia de zeros
 	def criaMatriz0(self,linha,coluna):
+		
+		if(linha <= 0 or coluna <= 0):
+			return None
+
 		matriz = []
 		for i in range(linha):
 			matriz.append([])
@@ -34,11 +38,11 @@ class Matriz(object):
 
 	#Função que cria um vetor a partir de uma coluna em especifico da matriz
 	def getColuna(self,ind):
-		col = []
+		col = [[]]
 		for i in range(self.lin):
-			col.append(self.m[i][ind])
+			col[0].append(self.m[i][ind])
 
-		return Matriz(col)
+		return Matriz(col).transpostaMatriz()
 
 	#Função que cria uma matriz identidade de tamanho N
 	def criaIdentidade(self, n):
@@ -321,7 +325,7 @@ class Simplex(object):
 		self.b = self.b.transpostaMatriz()          	 # Vetor de igualdade das restricoes.
 		self.custo = self.custo.transpostaMatriz()    	 # Vetor de custo (min).
 		self.base = self.base.transpostaMatriz()   	     # Vetor com as variaveis na base.
-		self.naoBase 	     # Vetor com as variaveis nao-base.
+		self.naoBase = self.naoBase.transpostaMatriz()	     # Vetor com as variaveis nao-base.
 		self.artificiais	 # Vetor com as variaveis artificiais.
 		self.B = []   	     # Matriz das colunas de cada variavel base.
 		self.solucao = None	 # Vetor solucao das variaveis presentes na base.
@@ -371,7 +375,8 @@ class Simplex(object):
 			naoBase.m[0][k] = int(temp[k]) - 1	
 
 		# Cria vetor de variaveis artificiais:
-		artificiais = Matriz([[0]*a]*1)
+		x = Matriz([[]])
+		artificiais = x.criaMatriz0(a,1)
 		if(a > 0):
 			temp = parq.readline().split()
 			for k in range(a):
@@ -443,7 +448,6 @@ class Simplex(object):
 
 				# Custo do indice na funcao objetivo:
 				custo = self.custo.m[indice][0]
-
 				# Coluna do indice nao basico da matriz A:
 				Aj = self.A.getColuna(indice)
 
@@ -454,12 +458,12 @@ class Simplex(object):
 				resOp1 = custoBaseT.multiplicaMatriz(invB)
 
 				# resOp2 = custoBase x invB x Aj:
-				resOp2 = resOp1,multiplicaMatriz(Aj)
+				resOp2 = resOp1.multiplicaMatriz(Aj)
 				
 				# (REQUISITO 04) Custo reduzido:
 				custo = custo - resOp2.m[0][0]
 				custoReduzido.m[0][indice] = custo
-				
+
 				# Trata valores de custo muito pequenos e negativos (i.e: -1e-16).
 				# (REQUISITO 09) Degeneracao - Garantir que custos proximos de 0 sejam +0.
 				# Arredonda o valor para 5 casas decimais.
@@ -498,21 +502,19 @@ class Simplex(object):
 
 				# (REQUISITO 09) - Solucao inexistente (Variaveis artificiais presentes na solucao):
 				if self.artificialNaBase():
-					printf("[Simplex] Solucao inexistente.\n")
+					print("[Simplex] Solucao inexistente.\n")
 					return -1
 				
 				# (REQUISITO 09) - Multiplos Otimos:
 				elif self.existeNaoBase0(custoReduzido):
-					printf("[Simplex] Multiplos Otimos.\nIteracoes = %d\nCusto otimo = %lf\n", iteracoes, objetivo);
-					return -3;
+					print("[Simplex] Multiplos Otimos.\nIteracoes = "+str(iteracoes)+"\nCusto otimo = "+str(objetivo)+"\n")
+					return -3
 				
 				# (REQUISITO 09) - Solucao Otima Unica:
 				else:
-					printf("[Simplex] Solucao Otima Unica.\nIteracoes = %d\nCusto otimo = %lf\n", iteracoes, objetivo);
-					return iteracoes;
+					print("[Simplex] Solucao Otima Unica.\nIteracoes = "+str(iteracoes)+"\nCusto otimo = "+str(objetivo)+"\n")
+					return iteracoes
 				
-			
-
 			custoBaseT = None
 			custoReduzido = None
 
@@ -523,11 +525,10 @@ class Simplex(object):
 			Aj = self.A.getColuna(indiceMenor)
 			u = invB.multiplicaMatriz(Aj)
 			if not self.existePositivo(u):
-				printf("[Simplex] Solucao Ilimitada.\nCusto otimo = -Infinito\n");
+				print("[Simplex] Solucao Ilimitada.\nCusto otimo = -Infinito\n");
 				return -2;
 			
 			Aj = None
-			u = None
 
 			# (REQUISITO 06) Determina o valor de theta:
 			theta = 99999999
@@ -542,6 +543,8 @@ class Simplex(object):
 					if(razao < theta):
 						theta = razao
 						indice = self.base.m[i][0]
+
+			u = None
 
 			# [DEBUG] Indice da variavel a sair da base:
 			# printf("Variavel sai da base: %d, theta = %lf\n", indice, theta);
@@ -604,7 +607,7 @@ class Simplex(object):
 	def existePositivo(self,x):
 
 		for i in range(x.lin):
-			if x[i][0] > 0:
+			if x.m[i][0] > 0:
 				return True
 
 		return False
@@ -613,10 +616,41 @@ class Simplex(object):
 	#Checa se existe uma variavel artificial na base:
 	def artificialNaBase(self):
 
+		if(self.artificiais == None):
+			return 0
+
 		for i in range(self.artificiais.lin):
 			var = self.artificiais.m[i][0]
 			for j in range(self.base.lin):
 				if(var == self.base[j][0]):
+					return 1
+
+		return 0
+
+
+	def existeNaoBase0(self, custoReduzido):
+		# (REQUISITO 09) Checa se existe uma variavel nao base com custo reduzido zero:
+		if (self == None) or (custoReduzido == None):
+			return 0
+
+		for i in range(custoReduzido.col):
+			custo = custoReduzido.m[0][i]
+
+			# Trata valores muito pequenos de custo (i.e: 1e-16).
+			# Arredonda o valor para 5 casas decimais:
+			fac = pow(10, 5);
+			custo = round(custo * fac) / fac;
+
+			# Encontrou um custo reduzido igual a zero:
+			if(custo == 0):
+				# Olha se o indice 'i' existe na base:
+				existe = 0
+				for j in range(self.base.lin):
+					if(i == self.base.m[j][0]):
+						existe = 1
+						break
+			
+				if(not existe):
 					return 1
 
 		return 0
