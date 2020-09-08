@@ -10,4 +10,4 @@ Autor: Eduardo Gabriel Reis Miranda
 
 <h1 align="left"> Execução </h1>
 
-python3 <arquivo-entrada> <arquivo-saida>
+python3 'arquivo-entrada' 'arquivo-saida'
